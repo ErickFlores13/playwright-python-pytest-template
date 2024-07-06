@@ -1,0 +1,37 @@
+name: Python application
+
+on: [push, pull_request]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        python-version: [3.8, 3.9, 3.10]
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        playwright install
+    - name: Run tests
+      run: |
+        pytest
+      env:
+        USER_AGENTE: ${{ secrets.USER_AGENTE }}
+        PASSWORD_USERS: ${{ secrets.PASSWORD_USERS }}
+        BASE_URL: ${{ secrets.BASE_URL }}
+    - name: Upload HTML report
+      if: always()
+      uses: actions/upload-artifact@v2
+      with:
+        name: report
+        path: report.html
